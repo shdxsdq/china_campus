@@ -1,0 +1,67 @@
+{
+  "kind": "singleType",
+  "collectionName": "site_settings",
+  "info": {
+    "singularName": "site-setting",
+    "pluralName": "site-settings",
+    "displayName": "Site Setting",
+    "description": "Global content used across the school website"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "schoolName": {
+      "type": "string",
+      "required": true
+    },
+    "schoolNameEn": {
+      "type": "string"
+    },
+    "welcomeText": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "logoUrl": {
+      "type": "string"
+    },
+    "principalTitle": {
+      "type": "string"
+    },
+    "principalImageUrl": {
+      "type": "string"
+    },
+    "principalParagraphs": {
+      "type": "json"
+    },
+    "heroSlides": {
+      "type": "json"
+    },
+    "campusStats": {
+      "type": "json"
+    },
+    "campusIntro": {
+      "type": "text"
+    },
+    "newsIntro": {
+      "type": "text"
+    },
+    "noticeIntro": {
+      "type": "text"
+    },
+    "teachersIntro": {
+      "type": "text"
+    },
+    "galleryIntro": {
+      "type": "text"
+    },
+    "teacherArchiveNote": {
+      "type": "text"
+    }
+  }
+}

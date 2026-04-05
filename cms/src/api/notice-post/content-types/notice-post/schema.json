@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "notice_posts",
+  "info": {
+    "singularName": "notice-post",
+    "pluralName": "notice-posts",
+    "displayName": "Notice Post",
+    "description": "Campus notice entries"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "publishedDate": {
+      "type": "date",
+      "required": true
+    },
+    "summary": {
+      "type": "text",
+      "required": true
+    },
+    "body": {
+      "type": "json"
+    },
+    "highlights": {
+      "type": "json"
+    },
+    "coverImageUrl": {
+      "type": "string"
+    }
+  }
+}

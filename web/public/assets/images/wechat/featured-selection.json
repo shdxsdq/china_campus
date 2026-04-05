@@ -1,0 +1,30 @@
+{
+  "files": [
+    "D:\\project\\school\\assets\\images\\wechat\\article_1\\img_001_7cca4efaec.jpg",
+    "D:\\project\\school\\assets\\images\\wechat\\article_2\\img_001_cbb0ded97f.jpg",
+    "D:\\project\\school\\assets\\images\\wechat\\article_3\\img_001_d478fc0221.jpg",
+    "D:\\project\\school\\assets\\images\\wechat\\article_4\\img_001_43f846b3b1.jpg",
+    "D:\\project\\school\\assets\\images\\wechat\\article_5\\img_001_d39c5dc3dc.jpg",
+    "D:\\project\\school\\assets\\images\\wechat\\article_1\\img_002_200c487025.png",
+    "D:\\project\\school\\assets\\images\\wechat\\article_2\\img_002_200c487025.png",
+    "D:\\project\\school\\assets\\images\\wechat\\article_3\\img_002_200c487025.png",
+    "D:\\project\\school\\assets\\images\\wechat\\article_4\\img_002_200c487025.png",
+    "D:\\project\\school\\assets\\images\\wechat\\article_5\\img_002_200c487025.png",
+    "D:\\project\\school\\assets\\images\\wechat\\article_1\\img_003_cd73a6855f.png",
+    "D:\\project\\school\\assets\\images\\wechat\\article_2\\img_003_24f3526ea6.jpg"
+  ],
+  "featured": [
+    "./assets/images/featured/featured-01.jpg",
+    "./assets/images/featured/featured-02.jpg",
+    "./assets/images/featured/featured-03.jpg",
+    "./assets/images/featured/featured-04.jpg",
+    "./assets/images/featured/featured-05.jpg",
+    "./assets/images/featured/featured-06.png",
+    "./assets/images/featured/featured-07.png",
+    "./assets/images/featured/featured-08.png",
+    "./assets/images/featured/featured-09.png",
+    "./assets/images/featured/featured-10.png",
+    "./assets/images/featured/featured-11.png",
+    "./assets/images/featured/featured-12.jpg"
+  ]
+}

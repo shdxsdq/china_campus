@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "campus_spots",
+  "info": {
+    "singularName": "campus-spot",
+    "pluralName": "campus-spots",
+    "displayName": "Campus Spot",
+    "description": "3D campus guide nodes"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "key": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "type": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "imageUrl": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "facts": {
+      "type": "json"
+    },
+    "camera": {
+      "type": "json"
+    },
+    "target": {
+      "type": "json"
+    },
+    "quickLabel": {
+      "type": "string"
+    },
+    "quickDescription": {
+      "type": "string"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 999
+    }
+  }
+}

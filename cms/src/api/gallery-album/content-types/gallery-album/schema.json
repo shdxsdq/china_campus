@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gallery_albums",
+  "info": {
+    "singularName": "gallery-album",
+    "pluralName": "gallery-albums",
+    "displayName": "Gallery Album",
+    "description": "Campus gallery albums"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "summary": {
+      "type": "text"
+    },
+    "coverImageUrl": {
+      "type": "string"
+    },
+    "externalUrl": {
+      "type": "string"
+    },
+    "selectedCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "totalCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "photos": {
+      "type": "json"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 999
+    }
+  }
+}
