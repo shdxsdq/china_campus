@@ -47,16 +47,34 @@ export type SiteSettings = {
   teacherArchiveNote: string;
 };
 
+export type RichContentNode = {
+  type?: string;
+  children?: RichContentNode[];
+  text?: string;
+  url?: string;
+  level?: number;
+  format?: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  code?: boolean;
+  [key: string]: unknown;
+};
+
 export type ContentPost = {
   id: string;
   type: "news" | "notice";
   slug: string;
   title: string;
   publishedDate: string;
+  author?: string;
   summary: string;
   body: string[];
+  bodyBlocks?: RichContentNode[];
   highlights: string[];
   coverImageUrl?: string;
+  coverImageAlt?: string;
 };
 
 export type TeacherSubject = {

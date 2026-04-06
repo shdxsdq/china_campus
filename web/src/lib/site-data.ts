@@ -8,6 +8,7 @@ import type {
   GalleryAlbum,
   GalleryPhoto,
   HeroSlide,
+  RichContentNode,
   SiteContent,
   SiteSettings,
   TeacherProfile,
@@ -48,6 +49,9 @@ const toAbsoluteAssetUrl = (value?: string | null) => {
   return value;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 const normalizeItem = (item: unknown): Record<string, unknown> => {
   if (!item || typeof item !== "object") {
     return {};
@@ -64,6 +68,114 @@ const normalizeItem = (item: unknown): Record<string, unknown> => {
   }
 
   return strapiItem;
+};
+
+const extractTextFromRichNode = (node: unknown): string => {
+  if (!isRecord(node)) {
+    return "";
+  }
+
+  if (typeof node.text === "string") {
+    return node.text;
+  }
+
+  if (Array.isArray(node.children)) {
+    return node.children.map(extractTextFromRichNode).join("");
+  }
+
+  return "";
+};
+
+const toRichContent = (value: unknown): RichContentNode[] | undefined => {
+  if (Array.isArray(value) && value.some(isRecord)) {
+    return value.filter(isRecord) as RichContentNode[];
+  }
+
+  if (typeof value === "string") {
+    try {
+      return toRichContent(JSON.parse(value));
+    } catch {
+      return undefined;
+    }
+  }
+
+  return undefined;
+};
+
+const toBodyContent = (value: unknown, summary: string) => {
+  const richContent = toRichContent(value);
+
+  if (richContent) {
+    const paragraphs = richContent
+      .map((block) => extractTextFromRichNode(block).trim())
+      .filter((paragraph) => paragraph.length > 0);
+
+    return {
+      paragraphs: withFallbackArray(paragraphs, [summary]),
+      richContent,
+    };
+  }
+
+  if (Array.isArray(value)) {
+    return {
+      paragraphs: withFallbackArray(
+        value.filter((item): item is string => typeof item === "string"),
+        [summary],
+      ),
+      richContent: undefined,
+    };
+  }
+
+  if (typeof value === "string") {
+    const paragraphs = value
+      .split(/\r?\n\r?\n|\r?\n/)
+      .map((paragraph) => paragraph.trim())
+      .filter((paragraph) => paragraph.length > 0);
+
+    return {
+      paragraphs: withFallbackArray(paragraphs, [summary]),
+      richContent: undefined,
+    };
+  }
+
+  return {
+    paragraphs: [summary],
+    richContent: undefined,
+  };
+};
+
+const toMediaAsset = (value: unknown): { url?: string; alt?: string } => {
+  if (!value) {
+    return {};
+  }
+
+  if (typeof value === "string") {
+    return { url: toAbsoluteAssetUrl(value) };
+  }
+
+  if (Array.isArray(value)) {
+    return toMediaAsset(value[0]);
+  }
+
+  if (isRecord(value) && "data" in value) {
+    return toMediaAsset(value.data);
+  }
+
+  const item = normalizeItem(value);
+
+  if (typeof item.url === "string") {
+    return {
+      url: toAbsoluteAssetUrl(item.url),
+      alt:
+        typeof item.alternativeText === "string"
+          ? item.alternativeText
+          : typeof item.name === "string"
+            ? item.name
+            : undefined,
+    };
+  }
+
+  return {};
 };
 
 const withFallbackArray = <T>(items: T[] | undefined, fallback: T[]) =>
@@ -273,18 +385,22 @@ const mapPost = (value: unknown, type: "news" | "notice"): ContentPost | null =>
     return null;
   }
 
+  const bodyContent = toBodyContent(item.body, String(item.summary ?? ""));
+  const mediaAsset = toMediaAsset(item.coverImage ?? item.coverImageUrl);
+
   return {
     id: String(item.documentId ?? item.id ?? item.slug),
     type,
     slug: String(item.slug),
     title: String(item.title),
     publishedDate: String(item.publishedDate ?? item.publishedAt ?? ""),
+    author: typeof item.author === "string" ? item.author : undefined,
     summary: String(item.summary ?? ""),
-    body: withFallbackArray(toStringArray(item.body), [String(item.summary ?? "")]),
+    body: bodyContent.paragraphs,
+    bodyBlocks: bodyContent.richContent,
     highlights: toStringArray(item.highlights),
-    coverImageUrl: toAbsoluteAssetUrl(
-      typeof item.coverImageUrl === "string" ? item.coverImageUrl : undefined,
-    ),
+    coverImageUrl: mediaAsset.url,
+    coverImageAlt: mediaAsset.alt,
   };
 };
 
@@ -401,7 +517,7 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
       "/api/news-posts?sort=publishedDate:desc",
     ),
     fetchStrapi<StrapiResponse<unknown[]>>(
-      "/api/notice-posts?sort=publishedDate:desc",
+      "/api/notice-posts?sort=publishedDate:desc&populate[coverImage][fields][0]=url&populate[coverImage][fields][1]=alternativeText&populate[coverImage][fields][2]=name",
     ),
     fetchStrapi<StrapiResponse<unknown[]>>(
       "/api/teacher-subjects?sort=sortOrder:asc",

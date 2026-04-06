@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { RichContent } from "@/components/rich-content";
 import type { ContentPost } from "@/lib/types";
 
 const formatArticleTimestamp = (value: string) => {
@@ -60,6 +61,12 @@ export function ArticleDetail({
                 <em>发布时间：</em>
                 <strong>{formatArticleTimestamp(post.publishedDate)}</strong>
               </span>
+              {post.author ? (
+                <span>
+                  <em>发布作者：</em>
+                  <strong>{post.author}</strong>
+                </span>
+              ) : null}
               <span>
                 <em>发布单位：</em>
                 <strong>{publisherLabel}</strong>
@@ -70,14 +77,16 @@ export function ArticleDetail({
 
           {post.coverImageUrl ? (
             <figure className="article-cover">
-              <img src={post.coverImageUrl} alt={post.title} />
+              <img src={post.coverImageUrl} alt={post.coverImageAlt ?? post.title} />
             </figure>
           ) : null}
 
           <div className="article-copy article-body">
-            {post.body.map((paragraph, index) => (
-              <p key={`${post.id}-${index}`}>{paragraph}</p>
-            ))}
+            {post.bodyBlocks && post.bodyBlocks.length > 0 ? (
+              <RichContent content={post.bodyBlocks} />
+            ) : (
+              post.body.map((paragraph, index) => <p key={`${post.id}-${index}`}>{paragraph}</p>)
+            )}
           </div>
 
           <div className="article-actions">

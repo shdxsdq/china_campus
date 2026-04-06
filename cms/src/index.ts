@@ -17,6 +17,48 @@ const seedCollection = async (
   }
 };
 
+const toBlocksBody = (paragraphs: string[]) =>
+  paragraphs
+    .filter((paragraph) => paragraph.trim().length > 0)
+    .map((paragraph) => ({
+      type: 'paragraph',
+      children: [
+        {
+          type: 'text',
+          text: paragraph,
+        },
+      ],
+    }));
+
+const migrateLegacyNoticePosts = async (strapi: Core.Strapi) => {
+  const noticePosts = (await strapi.db
+    .query('api::notice-post.notice-post')
+    .findMany()) as Array<Record<string, unknown>>;
+
+  for (const noticePost of noticePosts) {
+    const updates: Record<string, unknown> = {};
+    const body = noticePost.body;
+    const summary = String(noticePost.summary ?? '');
+
+    if (!noticePost.author) {
+      updates.author = '学校办公室';
+    }
+
+    if (Array.isArray(body) && body.every((item) => typeof item === 'string')) {
+      updates.body = toBlocksBody(body as string[]);
+    } else if (!body && summary) {
+      updates.body = toBlocksBody([summary]);
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await strapi.db.query('api::notice-post.notice-post').update({
+        where: { id: noticePost.id },
+        data: updates,
+      });
+    }
+  }
+};
+
 export default {
   register() {},
 
@@ -41,6 +83,7 @@ export default {
       'api::notice-post.notice-post',
       demoSeed.noticePosts,
     );
+    await migrateLegacyNoticePosts(strapi);
     await seedCollection(
       strapi,
       'api::teacher-subject.teacher-subject',
