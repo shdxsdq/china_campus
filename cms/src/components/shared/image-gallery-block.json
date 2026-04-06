@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_shared_image_gallery_blocks",
+  "info": {
+    "displayName": "Image Gallery Block",
+    "description": "Multiple images inserted between text sections"
+  },
+  "attributes": {
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

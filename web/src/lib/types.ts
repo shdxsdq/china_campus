@@ -71,6 +71,18 @@ export type MediaAsset = {
   ext?: string;
 };
 
+export type PostContentSection =
+  | {
+      id: string;
+      type: "rich-text";
+      content: RichContentNode[];
+    }
+  | {
+      id: string;
+      type: "image-gallery";
+      images: MediaAsset[];
+    };
+
 export type ContentPost = {
   id: string;
   type: "news" | "notice";
@@ -82,7 +94,7 @@ export type ContentPost = {
   bodyBlocks?: RichContentNode[];
   coverImageUrl?: string;
   coverImageAlt?: string;
-  bodyImages: MediaAsset[];
+  contentSections: PostContentSection[];
   attachments: MediaAsset[];
 };
 

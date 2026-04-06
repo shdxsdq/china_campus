@@ -9,6 +9,7 @@ import type {
   GalleryPhoto,
   HeroSlide,
   MediaAsset,
+  PostContentSection,
   RichContentNode,
   SiteContent,
   SiteSettings,
@@ -237,6 +238,44 @@ const toMediaAssets = (value: unknown): MediaAsset[] => {
   return asset?.url ? [asset] : [];
 };
 
+const toContentSections = (value: unknown): PostContentSection[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item, index) => {
+      const section = normalizeItem(item);
+      const component = String(section.__component ?? "");
+      const id = String(section.id ?? `section-${index}`);
+
+      if (component === "shared.rich-text-block") {
+        const content = toRichContent(section.content);
+        return content && content.length > 0
+          ? {
+              id,
+              type: "rich-text" as const,
+              content,
+            }
+          : null;
+      }
+
+      if (component === "shared.image-gallery-block") {
+        const images = toMediaAssets(section.images);
+        return images.length > 0
+          ? {
+              id,
+              type: "image-gallery" as const,
+              images,
+            }
+          : null;
+      }
+
+      return null;
+    })
+    .filter((item): item is PostContentSection => Boolean(item));
+};
+
 const withFallbackArray = <T>(items: T[] | undefined, fallback: T[]) =>
   items && items.length > 0 ? items : fallback;
 
@@ -446,6 +485,7 @@ const mapPost = (value: unknown, type: "news" | "notice"): ContentPost | null =>
 
   const bodyContent = toBodyContent(item.body);
   const mediaAsset = toMediaAsset(item.coverImage ?? item.coverImageUrl);
+  const contentSections = toContentSections(item.contentSections);
 
   return {
     id: String(item.documentId ?? item.id ?? item.slug),
@@ -458,7 +498,7 @@ const mapPost = (value: unknown, type: "news" | "notice"): ContentPost | null =>
     bodyBlocks: bodyContent.richContent,
     coverImageUrl: mediaAsset?.url,
     coverImageAlt: mediaAsset?.alt,
-    bodyImages: toMediaAssets(item.bodyImages),
+    contentSections,
     attachments: toMediaAssets(item.attachments),
   };
 };
@@ -567,18 +607,19 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     "&populate[coverImage][fields][0]=url" +
     "&populate[coverImage][fields][1]=alternativeText" +
     "&populate[coverImage][fields][2]=name" +
-    "&populate[bodyImages][fields][0]=url" +
-    "&populate[bodyImages][fields][1]=name" +
-    "&populate[bodyImages][fields][2]=alternativeText" +
-    "&populate[bodyImages][fields][3]=mime" +
-    "&populate[bodyImages][fields][4]=size" +
-    "&populate[bodyImages][fields][5]=ext" +
     "&populate[attachments][fields][0]=url" +
     "&populate[attachments][fields][1]=name" +
     "&populate[attachments][fields][2]=alternativeText" +
     "&populate[attachments][fields][3]=mime" +
     "&populate[attachments][fields][4]=size" +
-    "&populate[attachments][fields][5]=ext";
+    "&populate[attachments][fields][5]=ext" +
+    "&populate[contentSections][on][shared.rich-text-block][populate]=*" +
+    "&populate[contentSections][on][shared.image-gallery-block][populate][images][fields][0]=url" +
+    "&populate[contentSections][on][shared.image-gallery-block][populate][images][fields][1]=name" +
+    "&populate[contentSections][on][shared.image-gallery-block][populate][images][fields][2]=alternativeText" +
+    "&populate[contentSections][on][shared.image-gallery-block][populate][images][fields][3]=mime" +
+    "&populate[contentSections][on][shared.image-gallery-block][populate][images][fields][4]=size" +
+    "&populate[contentSections][on][shared.image-gallery-block][populate][images][fields][5]=ext";
 
   const [
     siteResponse,

@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_shared_rich_text_blocks",
+  "info": {
+    "displayName": "Rich Text Block",
+    "description": "Text section for article content"
+  },
+  "attributes": {
+    "content": {
+      "type": "blocks"
+    }
+  }
+}

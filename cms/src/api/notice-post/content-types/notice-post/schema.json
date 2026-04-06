@@ -29,7 +29,22 @@
       "default": "学校办公室"
     },
     "body": {
-      "type": "blocks"
+      "type": "blocks",
+      "pluginOptions": {
+        "content-manager": {
+          "visible": false
+        },
+        "content-type-builder": {
+          "visible": false
+        }
+      }
+    },
+    "contentSections": {
+      "type": "dynamiczone",
+      "components": [
+        "shared.rich-text-block",
+        "shared.image-gallery-block"
+      ]
     },
     "coverImageUrl": {
       "type": "string",
@@ -45,13 +60,6 @@
     "coverImage": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
-    "bodyImages": {
-      "type": "media",
-      "multiple": true,
       "allowedTypes": [
         "images"
       ]

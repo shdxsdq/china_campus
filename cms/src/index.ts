@@ -37,6 +37,12 @@ const isBlocksBody = (value: unknown) =>
   Array.isArray(value) &&
   value.some((item) => isRecord(item) && typeof item.type === 'string');
 
+const hasContentSections = (value: unknown) =>
+  Array.isArray(value) &&
+  value.some(
+    (item) => isRecord(item) && typeof item.__component === 'string',
+  );
+
 const extractParagraphs = (body: unknown) => {
   if (isBlocksBody(body)) {
     return [];
@@ -66,6 +72,30 @@ const extractParagraphs = (body: unknown) => {
   return [];
 };
 
+const toContentSections = (body: unknown) => {
+  if (isBlocksBody(body)) {
+    return [
+      {
+        __component: 'shared.rich-text-block',
+        content: body,
+      },
+    ];
+  }
+
+  const paragraphs = extractParagraphs(body);
+
+  if (paragraphs.length === 0) {
+    return [];
+  }
+
+  return [
+    {
+      __component: 'shared.rich-text-block',
+      content: toBlocksBody(paragraphs),
+    },
+  ];
+};
+
 const migrateLegacyPosts = async (
   strapi: Core.Strapi,
   uid: string,
@@ -78,6 +108,7 @@ const migrateLegacyPosts = async (
   for (const post of posts) {
     const updates: Record<string, unknown> = {};
     const body = post.body;
+    const contentSections = post.contentSections;
 
     if (!post.author) {
       updates.author = defaultAuthor;
@@ -88,6 +119,15 @@ const migrateLegacyPosts = async (
 
       if (paragraphs.length > 0) {
         updates.body = toBlocksBody(paragraphs);
+      }
+    }
+
+    if (!hasContentSections(contentSections)) {
+      const normalizedBody = updates.body ?? body;
+      const sections = toContentSections(normalizedBody);
+
+      if (sections.length > 0) {
+        updates.contentSections = sections;
       }
     }
 

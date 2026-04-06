@@ -72,7 +72,7 @@ export function ArticleDetail({
   publisherLabel: string;
 }) {
   const attachments = post.attachments ?? [];
-  const bodyImages = post.bodyImages ?? [];
+  const contentSections = post.contentSections ?? [];
 
   return (
     <main className="article-page section">
@@ -118,30 +118,42 @@ export function ArticleDetail({
           ) : null}
 
           <div className="article-copy article-body">
-            {post.bodyBlocks && post.bodyBlocks.length > 0 ? (
-              <RichContent content={post.bodyBlocks} />
-            ) : (
-              post.body.map((paragraph, index) => <p key={`${post.id}-${index}`}>{paragraph}</p>)
-            )}
-          </div>
+            {contentSections.length > 0
+              ? contentSections.map((section) => {
+                  if (section.type === "rich-text") {
+                    return (
+                      <div key={section.id} className="article-section">
+                        <RichContent content={section.content} />
+                      </div>
+                    );
+                  }
 
-          {bodyImages.length > 0 ? (
-            <section className="article-gallery" aria-labelledby="article-gallery-title">
-              <h2 id="article-gallery-title">正文图片</h2>
-              <div className="article-gallery-grid">
-                {bodyImages.map((image, index) => (
-                  <figure key={`${image.url}-${index}`} className="article-gallery-item">
-                    <img
-                      className="article-gallery-image"
-                      src={image.url}
-                      alt={image.alt ?? image.name ?? `${post.title} 图片 ${index + 1}`}
-                    />
-                    {image.name ? <figcaption>{image.name}</figcaption> : null}
-                  </figure>
-                ))}
-              </div>
-            </section>
-          ) : null}
+                  return (
+                    <div key={section.id} className="article-section article-section-gallery">
+                      <div className="article-section-gallery-grid">
+                        {section.images.map((image, index) => (
+                          <figure
+                            key={`${image.url}-${index}`}
+                            className="article-section-gallery-item"
+                          >
+                            <img
+                              className="article-section-gallery-image"
+                              src={image.url}
+                              alt={image.alt ?? image.name ?? `${post.title} 图片 ${index + 1}`}
+                            />
+                            {image.name ? <figcaption>{image.name}</figcaption> : null}
+                          </figure>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })
+              : post.bodyBlocks && post.bodyBlocks.length > 0
+                ? <RichContent content={post.bodyBlocks} />
+                : post.body.map((paragraph, index) => (
+                    <p key={`${post.id}-${index}`}>{paragraph}</p>
+                  ))}
+          </div>
 
           {attachments.length > 0 ? (
             <section className="article-attachments" aria-labelledby="article-attachments-title">
