@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { HtmlContent } from "@/components/html-content";
 import { RichContent } from "@/components/rich-content";
 import type { ContentPost, MediaAsset } from "@/lib/types";
 
@@ -118,7 +119,9 @@ export function ArticleDetail({
           ) : null}
 
           <div className="article-copy article-body">
-            {contentSections.length > 0
+            {post.bodyHtml ? (
+              <HtmlContent html={post.bodyHtml} />
+            ) : contentSections.length > 0
               ? contentSections.map((section) => {
                   if (section.type === "rich-text") {
                     return (

@@ -56,6 +56,8 @@ type ContentManagerComponentService = {
   ) => Promise<unknown>;
 };
 
+const IMAGE_URL_PATTERN = /\.(jpg|jpeg|png|webp|gif|bmp|svg)(\?.*)?$/i;
+
 const seedCollection = async (
   strapi: Core.Strapi,
   uid: string,
@@ -96,6 +98,16 @@ const hasContentSections = (value: unknown) =>
   value.some(
     (item) => isRecord(item) && typeof item.__component === 'string',
   );
+
+const isImageUrl = (value: string) => IMAGE_URL_PATTERN.test(value.trim());
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 const extractParagraphs = (body: unknown) => {
   if (isBlocksBody(body)) {
@@ -150,6 +162,332 @@ const toContentSections = (body: unknown) => {
   ];
 };
 
+const getNodeText = (node: unknown): string => {
+  if (!isRecord(node)) {
+    return '';
+  }
+
+  if (typeof node.text === 'string') {
+    return node.text;
+  }
+
+  if (Array.isArray(node.children)) {
+    return node.children.map((child) => getNodeText(child)).join('');
+  }
+
+  return '';
+};
+
+const normalizeMediaUrl = (value: unknown): string | undefined => {
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  if (Array.isArray(value)) {
+    return normalizeMediaUrl(value[0]);
+  }
+
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  if (typeof value.url === 'string' && value.url.trim().length > 0) {
+    return value.url.trim();
+  }
+
+  if ('data' in value) {
+    return normalizeMediaUrl(value.data);
+  }
+
+  return undefined;
+};
+
+const normalizeMediaAlt = (
+  value: unknown,
+  fallback = '',
+): string | undefined => {
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  if (Array.isArray(value)) {
+    return normalizeMediaAlt(value[0], fallback);
+  }
+
+  if (!isRecord(value)) {
+    return fallback || undefined;
+  }
+
+  if (
+    typeof value.alternativeText === 'string' &&
+    value.alternativeText.trim().length > 0
+  ) {
+    return value.alternativeText.trim();
+  }
+
+  if (typeof value.name === 'string' && value.name.trim().length > 0) {
+    return value.name.trim();
+  }
+
+  if ('data' in value) {
+    return normalizeMediaAlt(value.data, fallback);
+  }
+
+  return fallback || undefined;
+};
+
+const mediaFigureToHtml = (value: unknown, fallbackAlt = '') => {
+  const url = normalizeMediaUrl(value);
+
+  if (!url) {
+    return '';
+  }
+
+  const alt = normalizeMediaAlt(value, fallbackAlt) ?? '';
+  return `<figure class="image"><img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" /></figure>`;
+};
+
+const renderInlineNodeToHtml = (node: unknown): string => {
+  if (!isRecord(node)) {
+    return '';
+  }
+
+  if (typeof node.text === 'string') {
+    let content = escapeHtml(node.text);
+
+    if (node.code) {
+      content = `<code>${content}</code>`;
+    }
+
+    if (node.bold) {
+      content = `<strong>${content}</strong>`;
+    }
+
+    if (node.italic) {
+      content = `<em>${content}</em>`;
+    }
+
+    if (node.underline) {
+      content = `<u>${content}</u>`;
+    }
+
+    if (node.strikethrough) {
+      content = `<s>${content}</s>`;
+    }
+
+    return content;
+  }
+
+  const children = Array.isArray(node.children)
+    ? node.children.map((child) => renderInlineNodeToHtml(child)).join('')
+    : '';
+
+  if (typeof node.url === 'string') {
+    const href = escapeHtml(node.url);
+    const label = children || escapeHtml(node.url);
+
+    return `<a href="${href}" target="_blank" rel="noreferrer">${label}</a>`;
+  }
+
+  return children;
+};
+
+const extractStandaloneImage = (
+  children: unknown,
+): { url: string; alt: string } | null => {
+  if (!Array.isArray(children) || children.length === 0) {
+    return null;
+  }
+
+  if (
+    children.length === 1 &&
+    isRecord(children[0]) &&
+    typeof children[0].url === 'string' &&
+    isImageUrl(children[0].url)
+  ) {
+    return {
+      url: children[0].url.trim(),
+      alt: getNodeText(children[0]).trim(),
+    };
+  }
+
+  const text = children.map((child) => getNodeText(child)).join('').trim();
+  if (!isImageUrl(text)) {
+    return null;
+  }
+
+  return {
+    url: text,
+    alt: '',
+  };
+};
+
+const renderListItemToHtml = (node: unknown): string => {
+  if (!isRecord(node)) {
+    return '';
+  }
+
+  const children = Array.isArray(node.children) ? node.children : [];
+  const content = children
+    .map((child) => {
+      if (isRecord(child) && child.type === 'list') {
+        return renderBlockToHtml(child);
+      }
+
+      if (isRecord(child) && Array.isArray(child.children)) {
+        return child.children.map((grandchild) => renderInlineNodeToHtml(grandchild)).join('');
+      }
+
+      return renderInlineNodeToHtml(child);
+    })
+    .join('');
+
+  return `<li>${content}</li>`;
+};
+
+function renderBlockToHtml(block: unknown): string {
+  if (!isRecord(block) || typeof block.type !== 'string') {
+    return '';
+  }
+
+  switch (block.type) {
+    case 'paragraph': {
+      const image = extractStandaloneImage(block.children);
+      if (image) {
+        return mediaFigureToHtml(
+          {
+            url: image.url,
+            alternativeText: image.alt,
+          },
+          image.alt,
+        );
+      }
+
+      const content = Array.isArray(block.children)
+        ? block.children.map((child) => renderInlineNodeToHtml(child)).join('')
+        : '';
+
+      return content.trim().length > 0 ? `<p>${content}</p>` : '';
+    }
+
+    case 'heading': {
+      const level =
+        typeof block.level === 'number' && block.level >= 1 && block.level <= 6
+          ? block.level
+          : 2;
+      const content = Array.isArray(block.children)
+        ? block.children.map((child) => renderInlineNodeToHtml(child)).join('')
+        : '';
+
+      return content.trim().length > 0 ? `<h${level}>${content}</h${level}>` : '';
+    }
+
+    case 'list': {
+      const tag = block.format === 'ordered' ? 'ol' : 'ul';
+      const items = Array.isArray(block.children)
+        ? block.children.map((child) => renderListItemToHtml(child)).join('')
+        : '';
+
+      return items.trim().length > 0 ? `<${tag}>${items}</${tag}>` : '';
+    }
+
+    case 'quote': {
+      const content = Array.isArray(block.children)
+        ? block.children.map((child) => renderInlineNodeToHtml(child)).join('')
+        : '';
+
+      return content.trim().length > 0 ? `<blockquote><p>${content}</p></blockquote>` : '';
+    }
+
+    case 'code': {
+      const plainText =
+        typeof block.plainText === 'string'
+          ? block.plainText
+          : Array.isArray(block.children)
+            ? block.children.map((child) => getNodeText(child)).join('')
+            : '';
+
+      return plainText.trim().length > 0
+        ? `<pre><code>${escapeHtml(plainText)}</code></pre>`
+        : '';
+    }
+
+    case 'image': {
+      if ('image' in block) {
+        return mediaFigureToHtml(block.image);
+      }
+
+      return mediaFigureToHtml(block);
+    }
+
+    default:
+      return '';
+  }
+}
+
+const blocksToHtml = (value: unknown) => {
+  if (!isBlocksBody(value)) {
+    return '';
+  }
+
+  return (value as unknown[])
+    .map((block) => renderBlockToHtml(block))
+    .join('');
+};
+
+const contentSectionsToHtml = (value: unknown) => {
+  if (!Array.isArray(value)) {
+    return '';
+  }
+
+  return value
+    .map((section) => {
+      if (!isRecord(section) || typeof section.__component !== 'string') {
+        return '';
+      }
+
+      if (section.__component === 'shared.rich-text-block') {
+        return blocksToHtml(section.content);
+      }
+
+      if (section.__component === 'shared.image-gallery-block') {
+        const images = Array.isArray(section.images) ? section.images : [];
+        return images.map((image) => mediaFigureToHtml(image)).join('');
+      }
+
+      return '';
+    })
+    .join('');
+};
+
+const paragraphsToHtml = (paragraphs: string[]) =>
+  paragraphs
+    .map((paragraph) =>
+      isImageUrl(paragraph)
+        ? mediaFigureToHtml({ url: paragraph })
+        : `<p>${escapeHtml(paragraph)}</p>`,
+    )
+    .join('');
+
+const toLegacyHtmlBody = (body: unknown, contentSections: unknown) => {
+  const sectionsHtml = contentSectionsToHtml(contentSections);
+  if (sectionsHtml.trim().length > 0) {
+    return sectionsHtml;
+  }
+
+  const blocksHtml = blocksToHtml(body);
+  if (blocksHtml.trim().length > 0) {
+    return blocksHtml;
+  }
+
+  const paragraphs = extractParagraphs(body);
+  if (paragraphs.length > 0) {
+    return paragraphsToHtml(paragraphs);
+  }
+
+  return '';
+};
+
 const withMetadata = (
   metadata: ContentManagerMetadata | undefined,
   {
@@ -193,10 +531,12 @@ const syncArticleEditorLayout = async (
   const current = await contentTypeService.findConfiguration(contentType);
   const attributes = contentType.attributes ?? {};
   const hasBody = Object.prototype.hasOwnProperty.call(attributes, 'body');
+  const hasBodyHtml = Object.prototype.hasOwnProperty.call(attributes, 'bodyHtml');
   const hasBodyImages = Object.prototype.hasOwnProperty.call(
     attributes,
     'bodyImages',
   );
+  const bodyFieldName = hasBodyHtml ? 'bodyHtml' : hasBody ? 'body' : undefined;
 
   await contentTypeService.updateConfiguration(contentType, {
     settings: {
@@ -223,13 +563,18 @@ const syncArticleEditorLayout = async (
         label: '\u4f5c\u8005',
       }),
       body: withMetadata(current.metadatas.body, {
+        label: '\u65e7\u7248\u6b63\u6587',
+        description: '',
+        visible: !hasBodyHtml && hasBody,
+      }),
+      bodyHtml: withMetadata(current.metadatas.bodyHtml, {
         label: '\u6b63\u6587\u5185\u5bb9',
         description:
-          '\u76f4\u63a5\u5728\u6b63\u6587\u91cc\u8f93\u5165\u6587\u5b57\uff0c\u5e76\u5728\u5149\u6807\u4f4d\u7f6e\u63d2\u5165\u56fe\u7247\uff0c\u5c31\u4f1a\u6309\u987a\u5e8f\u663e\u793a\u5728\u5bf9\u5e94\u6bb5\u843d\u4e2d',
-        visible: hasBody,
+          '\u5149\u6807\u505c\u5728\u54ea\u91cc\uff0c\u56fe\u7247\u5c31\u63d2\u5230\u54ea\u91cc\u3002\u53ef\u76f4\u63a5\u4e0a\u4f20\u6216\u4ece\u5a92\u4f53\u5e93\u9009\u62e9\u591a\u5f20\u56fe\u7247\uff0c\u7f16\u8f91\u533a\u4f1a\u76f4\u63a5\u9884\u89c8\u6548\u679c\u3002',
+        visible: hasBodyHtml,
       }),
       contentSections: withMetadata(current.metadatas.contentSections, {
-        label: '\u65b0\u7248\u5206\u6bb5\u5185\u5bb9',
+        label: '\u65e7\u7248\u5206\u6bb5\u5185\u5bb9',
         description: '',
         visible: false,
       }),
@@ -265,7 +610,7 @@ const syncArticleEditorLayout = async (
           { name: 'publishedDate', size: 4 },
           { name: 'author', size: 4 },
         ],
-        ...(hasBody ? [[{ name: 'body', size: 12 }]] : []),
+        ...(bodyFieldName ? [[{ name: bodyFieldName, size: 12 }]] : []),
         [
           { name: 'coverImage', size: 6 },
           { name: 'attachments', size: 6 },
@@ -325,6 +670,8 @@ const migrateLegacyPosts = async (
     const updates: Record<string, unknown> = {};
     const body = post.body;
     const contentSections = post.contentSections;
+    const bodyHtml =
+      typeof post.bodyHtml === 'string' ? post.bodyHtml.trim() : '';
 
     if (!post.author) {
       updates.author = defaultAuthor;
@@ -338,12 +685,11 @@ const migrateLegacyPosts = async (
       }
     }
 
-    if (!hasContentSections(contentSections)) {
-      const normalizedBody = updates.body ?? body;
-      const sections = toContentSections(normalizedBody);
+    if (!bodyHtml) {
+      const html = toLegacyHtmlBody(updates.body ?? body, contentSections);
 
-      if (sections.length > 0) {
-        updates.contentSections = sections;
+      if (html.trim().length > 0) {
+        updates.bodyHtml = html;
       }
     }
 
@@ -397,8 +743,16 @@ export default {
       'api::notice-post.notice-post',
       demoSeed.noticePosts,
     );
-    await migrateLegacyPosts(strapi, 'api::news-post.news-post', '校园新闻组');
-    await migrateLegacyPosts(strapi, 'api::notice-post.notice-post', '学校办公室');
+    await migrateLegacyPosts(
+      strapi,
+      'api::news-post.news-post',
+      '\u6821\u56ed\u65b0\u95fb\u7ec4',
+    );
+    await migrateLegacyPosts(
+      strapi,
+      'api::notice-post.notice-post',
+      '\u5b66\u6821\u529e\u516c\u5ba4',
+    );
     await seedCollection(
       strapi,
       'api::teacher-subject.teacher-subject',

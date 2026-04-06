@@ -91,6 +91,7 @@ export type ContentPost = {
   publishedDate: string;
   author?: string;
   body: string[];
+  bodyHtml?: string;
   bodyBlocks?: RichContentNode[];
   coverImageUrl?: string;
   coverImageAlt?: string;

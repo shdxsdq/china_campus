@@ -1294,6 +1294,13 @@ a {
   .article-section-gallery-grid {
     grid-template-columns: 1fr;
   }
+
+  .article-html .image.image-style-align-left,
+  .article-html .image.image-style-align-right {
+    float: none;
+    width: 100%;
+    margin: 10px 0 4px;
+  }
 }
 
 @media (max-width: 680px) {
@@ -1441,6 +1448,75 @@ a {
 
 .article-body p {
   white-space: pre-wrap;
+}
+
+.article-html {
+  display: grid;
+  gap: 20px;
+}
+
+.article-html > * {
+  margin: 0;
+}
+
+.article-html p {
+  white-space: normal;
+}
+
+.article-html .image,
+.article-html figure {
+  margin: 10px 0 4px;
+}
+
+.article-html img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 14px 32px rgba(15, 38, 71, 0.12);
+}
+
+.article-html .image.image-style-align-left {
+  float: left;
+  width: min(320px, 46%);
+  margin: 10px 24px 14px 0;
+}
+
+.article-html .image.image-style-align-right {
+  float: right;
+  width: min(320px, 46%);
+  margin: 10px 0 14px 24px;
+}
+
+.article-html::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+.article-html .table {
+  margin: 12px 0;
+}
+
+.article-html table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #dbe4ee;
+}
+
+.article-html th,
+.article-html td {
+  padding: 12px 14px;
+  border: 1px solid #dbe4ee;
+  text-align: left;
+}
+
+.article-html th {
+  background: #f5f8fc;
+  color: #17304f;
 }
 
 .article-body-figure {

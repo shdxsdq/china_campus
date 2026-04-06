@@ -39,6 +39,13 @@
         }
       }
     },
+    "bodyHtml": {
+      "type": "richtext",
+      "customField": "plugin::ckeditor5.CKEditor",
+      "options": {
+        "preset": "campusArticle"
+      }
+    },
     "contentSections": {
       "type": "dynamiczone",
       "components": [

@@ -138,6 +138,15 @@ const toRichContent = (value: unknown): RichContentNode[] | undefined => {
   return undefined;
 };
 
+const toHtmlString = (value: unknown) => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const html = value.trim();
+  return html.length > 0 ? html : undefined;
+};
+
 const toBodyContent = (value: unknown) => {
   const richContent = toRichContent(value);
 
@@ -495,6 +504,7 @@ const mapPost = (value: unknown, type: "news" | "notice"): ContentPost | null =>
     publishedDate: String(item.publishedDate ?? item.publishedAt ?? ""),
     author: typeof item.author === "string" ? item.author : undefined,
     body: bodyContent.paragraphs,
+    bodyHtml: toHtmlString(item.bodyHtml),
     bodyBlocks: bodyContent.richContent,
     coverImageUrl: mediaAsset?.url,
     coverImageAlt: mediaAsset?.alt,
