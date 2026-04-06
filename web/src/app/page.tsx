@@ -40,11 +40,17 @@ export default async function Home() {
         <section className="section container">
           <SectionHeading title="最新发布" meta="新闻与公告分开展示" />
           <div className="subject-grid">
-            <PostListCard title="校园新闻" posts={news.slice(0, 4)} basePath="/news" />
+            <PostListCard
+              title="校园新闻"
+              posts={news.slice(0, 4)}
+              basePath="/news"
+              compactDate
+            />
             <PostListCard
               title="校园公告"
               posts={notices.slice(0, 4)}
               basePath="/notice"
+              compactDate
             />
           </div>
         </section>

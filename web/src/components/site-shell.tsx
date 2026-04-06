@@ -13,6 +13,28 @@ import type {
   TeacherSubject,
 } from "@/lib/types";
 
+const formatPostDate = (value: string, compact = false) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.valueOf())) {
+    return value;
+  }
+
+  if (compact) {
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${month}.${day}`;
+  }
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+    .format(date)
+    .replaceAll("/", "-");
+};
+
 export function SiteShell({
   activeNav,
   site,
@@ -106,10 +128,12 @@ export function PostListCard({
   title,
   posts,
   basePath,
+  compactDate = false,
 }: {
   title: string;
   posts: ContentPost[];
   basePath: string;
+  compactDate?: boolean;
 }) {
   return (
     <article className="list-card">
@@ -117,8 +141,15 @@ export function PostListCard({
       <ul>
         {posts.map((post) => (
           <li key={post.id}>
-            <Link href={`${basePath}/${post.slug}`}>{post.title}</Link>
-            <time>{post.publishedDate}</time>
+            <Link className="post-list-link" href={`${basePath}/${post.slug}`}>
+              {post.title}
+            </Link>
+            <time
+              className={`post-list-date${compactDate ? " is-compact" : ""}`}
+              dateTime={post.publishedDate}
+            >
+              {formatPostDate(post.publishedDate, compactDate)}
+            </time>
           </li>
         ))}
       </ul>

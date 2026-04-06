@@ -392,13 +392,42 @@ a {
 .list-card li {
   padding: 12px 0;
   border-bottom: 1px dashed #d6dfeb;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
 }
 
 .list-card li:last-child {
   border-bottom: 0;
+}
+
+.post-list-link {
+  min-width: 0;
+  color: #1b3350;
+  line-height: 1.8;
+}
+
+.post-list-date {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 88px;
+  white-space: nowrap;
+  color: #62738a;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.post-list-date.is-compact {
+  min-width: 62px;
+  justify-content: center;
+  padding: 4px 0;
+  border-left: 1px solid #e5ebf3;
+  color: #1b4f8a;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .gallery-grid {
