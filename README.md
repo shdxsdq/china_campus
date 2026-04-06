@@ -26,10 +26,11 @@ Copy-Item .env.example .env.local
 npm.cmd run dev
 ```
 
-3. 如果希望前端直接读取 Strapi，把 `web/.env.local` 里的这两个值补上：
+3. 如果希望前端直接读取 Strapi，把 `web/.env.local` 里的这几个值补上：
 
 ```env
 STRAPI_URL=http://127.0.0.1:1337
+STRAPI_PUBLIC_URL=http://127.0.0.1:1337
 STRAPI_API_TOKEN=你的只读 API Token
 ```
 
@@ -54,7 +55,17 @@ STRAPI_API_TOKEN=你的只读 API Token
 
 ## 部署建议
 
-- `web` 部署到 Vercel
-- `cms` 单独部署到支持 Node 服务和数据库的环境
+- 推荐部署到中国内地可备案环境，例如阿里云 ECS / 轻量应用服务器、腾讯云 CVM / 轻量应用服务器。
+- `web` 使用 Node.js 自托管，建议经 `Nginx -> Next.js` 反向代理对外提供服务。
+- `cms` 使用 Strapi 自托管，建议经 `Nginx -> Strapi` 暴露独立子域名，如 `cms.example.cn`。
+- 生产数据库优先使用阿里云 RDS、腾讯云数据库等托管 MySQL / PostgreSQL，避免继续使用 SQLite。
 
-当前这套仓库已经适合按 monorepo 方式使用：在 Vercel 导入仓库时，把前端项目的 Root Directory 设为 `web`。
+## 国内生产部署
+
+- 前端公网域名建议使用 `https://www.example.cn`
+- CMS 公网域名建议使用 `https://cms.example.cn`
+- 前端服务端访问 CMS 时，可把 `STRAPI_URL` 配成同机 `http://127.0.0.1:1337` 或同 VPC 内网地址
+- 浏览器访问图片、附件等静态资源时，使用 `STRAPI_PUBLIC_URL=https://cms.example.cn`
+- 样例环境变量见 [web/.env.production.example](web/.env.production.example) 和 [cms/.env.production.example](cms/.env.production.example)
+- 反向代理与进程管理样例见 [deploy/nginx/china-campus.conf](deploy/nginx/china-campus.conf) 和 [deploy/pm2/ecosystem.config.cjs](deploy/pm2/ecosystem.config.cjs)
+- 详细步骤见 [docs/deploy-cn.md](docs/deploy-cn.md)

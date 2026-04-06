@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | 南部县第五小学",
   },
   description:
-    "基于 Next.js、Strapi 与 Vercel 搭建的学校官网示例，包含校园新闻、公告、师资队伍、活动相册与校园导览。",
+    "基于 Next.js 与 Strapi 自托管的学校官网示例，适合部署到阿里云、腾讯云等国内可备案服务器。",
 };
 
 export default function RootLayout({

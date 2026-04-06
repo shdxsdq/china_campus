@@ -30,6 +30,9 @@ type StrapiResponse<T> = {
 };
 
 const STRAPI_URL = process.env.STRAPI_URL?.trim();
+// Allow the app server to call Strapi over an internal address while emitting
+// browser-safe asset URLs that point at the public CMS domain.
+const STRAPI_PUBLIC_URL = process.env.STRAPI_PUBLIC_URL?.trim() || STRAPI_URL;
 const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN?.trim();
 
 const toAbsoluteAssetUrl = (value?: string | null) => {
@@ -45,8 +48,8 @@ const toAbsoluteAssetUrl = (value?: string | null) => {
     return value;
   }
 
-  if (STRAPI_URL && value.startsWith("/")) {
-    return `${STRAPI_URL}${value}`;
+  if (STRAPI_PUBLIC_URL && value.startsWith("/")) {
+    return `${STRAPI_PUBLIC_URL}${value}`;
   }
 
   return value;
