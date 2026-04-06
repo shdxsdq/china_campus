@@ -37,7 +37,7 @@ const isBlocksBody = (value: unknown) =>
   Array.isArray(value) &&
   value.some((item) => isRecord(item) && typeof item.type === 'string');
 
-const extractParagraphs = (body: unknown, summary: string) => {
+const extractParagraphs = (body: unknown) => {
   if (isBlocksBody(body)) {
     return [];
   }
@@ -53,7 +53,7 @@ const extractParagraphs = (body: unknown, summary: string) => {
     try {
       const parsed = JSON.parse(body) as unknown;
       if (Array.isArray(parsed)) {
-        return extractParagraphs(parsed, summary);
+        return extractParagraphs(parsed);
       }
     } catch {
       return body
@@ -63,7 +63,7 @@ const extractParagraphs = (body: unknown, summary: string) => {
     }
   }
 
-  return summary.trim().length > 0 ? [summary.trim()] : [];
+  return [];
 };
 
 const migrateLegacyPosts = async (
@@ -78,14 +78,13 @@ const migrateLegacyPosts = async (
   for (const post of posts) {
     const updates: Record<string, unknown> = {};
     const body = post.body;
-    const summary = String(post.summary ?? '');
 
     if (!post.author) {
       updates.author = defaultAuthor;
     }
 
     if (!isBlocksBody(body)) {
-      const paragraphs = extractParagraphs(body, summary);
+      const paragraphs = extractParagraphs(body);
 
       if (paragraphs.length > 0) {
         updates.body = toBlocksBody(paragraphs);

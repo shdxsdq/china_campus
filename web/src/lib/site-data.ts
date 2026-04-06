@@ -137,9 +137,8 @@ const toRichContent = (value: unknown): RichContentNode[] | undefined => {
   return undefined;
 };
 
-const toBodyContent = (value: unknown, summary: string) => {
+const toBodyContent = (value: unknown) => {
   const richContent = toRichContent(value);
-  const fallbackParagraphs = summary.trim().length > 0 ? [summary.trim()] : [];
 
   if (richContent) {
     const paragraphs = richContent
@@ -147,20 +146,17 @@ const toBodyContent = (value: unknown, summary: string) => {
       .filter((paragraph) => paragraph.length > 0);
 
     return {
-      paragraphs: withFallbackArray(paragraphs, fallbackParagraphs),
+      paragraphs,
       richContent,
     };
   }
 
   if (Array.isArray(value)) {
     return {
-      paragraphs: withFallbackArray(
-        value
-          .filter((item): item is string => typeof item === "string")
-          .map((item) => item.trim())
-          .filter((item) => item.length > 0),
-        fallbackParagraphs,
-      ),
+      paragraphs: value
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0),
       richContent: undefined,
     };
   }
@@ -172,13 +168,13 @@ const toBodyContent = (value: unknown, summary: string) => {
       .filter((paragraph) => paragraph.length > 0);
 
     return {
-      paragraphs: withFallbackArray(paragraphs, fallbackParagraphs),
+      paragraphs,
       richContent: undefined,
     };
   }
 
   return {
-    paragraphs: fallbackParagraphs,
+    paragraphs: [],
     richContent: undefined,
   };
 };
@@ -448,9 +444,7 @@ const mapPost = (value: unknown, type: "news" | "notice"): ContentPost | null =>
     return null;
   }
 
-  const summary =
-    typeof item.summary === "string" ? item.summary.trim() : "";
-  const bodyContent = toBodyContent(item.body, summary);
+  const bodyContent = toBodyContent(item.body);
   const mediaAsset = toMediaAsset(item.coverImage ?? item.coverImageUrl);
 
   return {
@@ -460,10 +454,8 @@ const mapPost = (value: unknown, type: "news" | "notice"): ContentPost | null =>
     title: String(item.title),
     publishedDate: String(item.publishedDate ?? item.publishedAt ?? ""),
     author: typeof item.author === "string" ? item.author : undefined,
-    summary: summary || undefined,
     body: bodyContent.paragraphs,
     bodyBlocks: bodyContent.richContent,
-    highlights: toStringArray(item.highlights),
     coverImageUrl: mediaAsset?.url,
     coverImageAlt: mediaAsset?.alt,
     attachments: toMediaAssets(item.attachments),

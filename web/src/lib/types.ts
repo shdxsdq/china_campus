@@ -78,13 +78,11 @@ export type ContentPost = {
   title: string;
   publishedDate: string;
   author?: string;
-  summary?: string;
   body: string[];
   bodyBlocks?: RichContentNode[];
-  highlights?: string[];
   coverImageUrl?: string;
   coverImageAlt?: string;
-  attachments?: MediaAsset[];
+  attachments: MediaAsset[];
 };
 
 export type TeacherSubject = {

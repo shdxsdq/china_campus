@@ -23,15 +23,13 @@ const createPost = (
   publishedDate: string,
   slug: string,
   summary: string,
-  highlights: string[],
+  _highlights: string[],
   coverImageUrl?: string,
 ) => ({
   title,
   publishedDate,
   slug,
-  summary,
   body: createBody(summary),
-  highlights,
   coverImageUrl,
 });
 

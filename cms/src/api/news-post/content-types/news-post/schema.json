@@ -28,31 +28,8 @@
       "type": "string",
       "default": "校园新闻组"
     },
-    "summary": {
-      "type": "text",
-      "default": "",
-      "pluginOptions": {
-        "content-manager": {
-          "visible": false
-        },
-        "content-type-builder": {
-          "visible": false
-        }
-      }
-    },
     "body": {
       "type": "blocks"
-    },
-    "highlights": {
-      "type": "json",
-      "pluginOptions": {
-        "content-manager": {
-          "visible": false
-        },
-        "content-type-builder": {
-          "visible": false
-        }
-      }
     },
     "coverImageUrl": {
       "type": "string",
