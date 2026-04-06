@@ -854,7 +854,7 @@ export const DEMO_CONTENT: SiteContent = {
     phone: "13890887770",
     logoUrl: "/assets/images/school-logo.jpg",
     principalTitle: "校长寄语",
-    principalImageUrl: "/assets/images/校长寄语.jpg",
+    principalImageUrl: "/assets/images/principal.jpg",
     principalParagraphs: [
       "网站的首页不追求栏目越多越好，而是让信息更有层次、更容易查找。把核心栏目收拢后，学校概况、新闻公告和师资展示会更清楚。",
       "后续随着学校资料逐步补齐，我们可以继续往各个栏目页里扩展内容，但首页始终保持简洁稳定。",
