@@ -458,6 +458,7 @@ const mapPost = (value: unknown, type: "news" | "notice"): ContentPost | null =>
     bodyBlocks: bodyContent.richContent,
     coverImageUrl: mediaAsset?.url,
     coverImageAlt: mediaAsset?.alt,
+    bodyImages: toMediaAssets(item.bodyImages),
     attachments: toMediaAssets(item.attachments),
   };
 };
@@ -566,6 +567,12 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     "&populate[coverImage][fields][0]=url" +
     "&populate[coverImage][fields][1]=alternativeText" +
     "&populate[coverImage][fields][2]=name" +
+    "&populate[bodyImages][fields][0]=url" +
+    "&populate[bodyImages][fields][1]=name" +
+    "&populate[bodyImages][fields][2]=alternativeText" +
+    "&populate[bodyImages][fields][3]=mime" +
+    "&populate[bodyImages][fields][4]=size" +
+    "&populate[bodyImages][fields][5]=ext" +
     "&populate[attachments][fields][0]=url" +
     "&populate[attachments][fields][1]=name" +
     "&populate[attachments][fields][2]=alternativeText" +

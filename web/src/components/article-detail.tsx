@@ -72,6 +72,7 @@ export function ArticleDetail({
   publisherLabel: string;
 }) {
   const attachments = post.attachments ?? [];
+  const bodyImages = post.bodyImages ?? [];
 
   return (
     <main className="article-page section">
@@ -123,6 +124,24 @@ export function ArticleDetail({
               post.body.map((paragraph, index) => <p key={`${post.id}-${index}`}>{paragraph}</p>)
             )}
           </div>
+
+          {bodyImages.length > 0 ? (
+            <section className="article-gallery" aria-labelledby="article-gallery-title">
+              <h2 id="article-gallery-title">正文图片</h2>
+              <div className="article-gallery-grid">
+                {bodyImages.map((image, index) => (
+                  <figure key={`${image.url}-${index}`} className="article-gallery-item">
+                    <img
+                      className="article-gallery-image"
+                      src={image.url}
+                      alt={image.alt ?? image.name ?? `${post.title} 图片 ${index + 1}`}
+                    />
+                    {image.name ? <figcaption>{image.name}</figcaption> : null}
+                  </figure>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           {attachments.length > 0 ? (
             <section className="article-attachments" aria-labelledby="article-attachments-title">

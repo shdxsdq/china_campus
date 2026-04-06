@@ -82,6 +82,7 @@ export type ContentPost = {
   bodyBlocks?: RichContentNode[];
   coverImageUrl?: string;
   coverImageAlt?: string;
+  bodyImages: MediaAsset[];
   attachments: MediaAsset[];
 };
 

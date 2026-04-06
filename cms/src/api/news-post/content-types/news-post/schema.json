@@ -49,6 +49,13 @@
         "images"
       ]
     },
+    "bodyImages": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
     "attachments": {
       "type": "media",
       "multiple": true,

@@ -99,6 +99,7 @@ const createPost = (
     "后续如果接入 Strapi，这类内容可以由后台直接维护标题、摘要、正文、发布时间和封面图，前台列表页与详情页会自动同步更新。",
   ],
   coverImageUrl,
+  bodyImages: [],
   attachments: [],
 });
 
