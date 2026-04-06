@@ -1457,3 +1457,67 @@ a {
   font-weight: 600;
 }
 
+.pagination-block {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  margin-top: 28px;
+}
+
+.pagination-summary {
+  margin: 0;
+  color: #5e6d82;
+  font-size: 14px;
+}
+
+.pagination-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pagination-control,
+.pagination-page {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 10px 14px;
+  border: 1px solid #d7e0eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #29476e;
+  font-weight: 600;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.pagination-control:hover,
+.pagination-page:hover {
+  transform: translateY(-1px);
+  border-color: #173f73;
+}
+
+.pagination-page.is-current {
+  border-color: #173f73;
+  background: #173f73;
+  color: #fff;
+}
+
+.pagination-control.is-disabled {
+  border-color: #e5ebf3;
+  background: #f5f7fa;
+  color: #9aa7b8;
+}
+
